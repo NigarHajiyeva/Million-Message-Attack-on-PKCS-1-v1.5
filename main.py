@@ -77,34 +77,125 @@ class RSAOracle:
         return rsa.decrypt_string(self.sk, ciphertext)
 
 
+class MillionMessageAttack:
+    """
+    Implementation of Million Message's attack using an RSA oracle and PKCS#1.
+    """
+
+    def __init__(self, rsa_oracle: RSAOracle):
+        self.oracle = rsa_oracle
+        self.n = rsa_oracle.n
+        self.e = rsa_oracle.e
+        self.k = rsa_oracle.k
+        self.pkcs1 = PKCS1(self.k)
+        self.B = 2 ** (8 * (self.k - 2))  # B = 2^(8*(k-2)) as per PKCS#1 v1.5
+
+    def floor(self, a, b):
+        return a // b
+
+    def ceil(self, a, b):
+        return a // b + (a % b > 0)
+
+    def prepare(self, message):
+        """
+        Encode message, encrypt with RSA PKCS#1 v1.5
+        """
+        message_encoded = self.pkcs1.encode(message)
+        ciphertext = self.oracle.encrypt(message_encoded)
+        return ciphertext
+
+    def find_smallest_s(self, lower_bound, c):
+        # Find the smallest s such that (c * s^e mod n) is PKCS conforming
+        s = lower_bound
+        while True:
+            attempt = (c * pow(s, self.e, self.n)) % self.n
+            attempt_bytes = utils.integer_to_bytes(attempt)
+
+            if self.oracle.oracle(attempt_bytes):
+                return s
+            s += 1
+
+    def find_s_in_range(self, a, b, prev_s, c):
+        # Try to find s in a specific range by adjusting r values
+        ri = self.ceil(2 * (b * prev_s - 2 * self.B), self.n)
+
+        while True:
+            si_lower = self.ceil(2 * self.B + ri * self.n, b)
+            si_upper = self.ceil(3 * self.B + ri * self.n, a)
+
+            for si in range(si_lower, si_upper):
+                attempt = (c * pow(si, self.e, self.n)) % self.n
+                attempt_bytes = utils.integer_to_bytes(attempt)
+
+                if self.oracle.oracle(attempt_bytes):
+                    return si
+
+            ri += 1
+
+    def safe_interval_insert(self, M_new, interval):
+        # Merge overlapping intervals to avoid redundant guesses
+        for i, (a, b) in enumerate(M_new):
+            if (b >= interval.lower_bound) and (a <= interval.upper_bound):
+                lb = min(a, interval.lower_bound)
+                ub = max(b, interval.upper_bound)
+                M_new[i] = Interval(lb, ub)
+                return M_new
+        M_new.append(interval)
+        return M_new
+
+    def update_intervals(self, M, s):
+        # Update the set of intervals [a, b] containing the plaintext
+        M_new = []
+        for a, b in M:
+            r_lower = self.ceil(a * s - 3 * self.B + 1, self.n)
+            r_upper = self.ceil(b * s - 2 * self.B, self.n)
+
+            for r in range(r_lower, r_upper):
+                lower_bound = max(a, self.ceil(2 * self.B + r * self.n, s))
+                upper_bound = min(b, self.floor(3 * self.B - 1 + r * self.n, s))
+                interval = Interval(lower_bound, upper_bound)
+                M_new = self.safe_interval_insert(M_new, interval)
+
+        M.clear()
+        return M_new
+
+    def run(self, ciphertext):
+        # Main attack loop
+        c = utils.bytes_to_integer(ciphertext)
+        M = [Interval(2 * self.B, 3 * self.B - 1)]  # Initial interval
+
+        s = self.find_smallest_s(self.ceil(self.n, 3 * self.B), c)  # Step 1: find first valid s
+        M = self.update_intervals(M, s)
+
+        while True:
+            if len(M) >= 2:
+                # More than one interval, continue finding valid s
+                s = self.find_smallest_s(s + 1, c)
+            elif len(M) == 1:
+                # Only one interval left, try to narrow down s more efficiently
+                a, b = M[0]
+                if a == b:
+                    return utils.integer_to_bytes(a % self.n)  # Plaintext found
+                s = self.find_s_in_range(a, b, s, c)
+            M = self.update_intervals(M, s)
+
+
+def main():
+    rsa_oracle = RSAOracle()
+    attack = MillionMessageAttack(rsa_oracle)
+
+    message = b"m1ll10nm3ss4g34tt4ck"
+    ciphertext = attack.prepare(message)
+    decrypted = attack.run(ciphertext)
+    decrypted = attack.pkcs1.decode(decrypted)
+
+    assert decrypted == message  # Ensure successful decryption
+
+    print("----------")
+    print(f"Total Queries:\t{rsa_oracle.queries}")
+    print(f"Original Message:\t{message}")
+    print(f"Decrypted by Attack:\t{decrypted}")
+
+
 if __name__ == "__main__":
-    # Original message to encrypt
-    message = b"Hello, RSA!"
-
-    # Initialize RSA oracle with 256-bit key (k = 256/8 = 32 bytes)
-    oracle = RSAOracle(modulus_size=256)
-    k = oracle.k  # Number of bytes in the modulus
-
-    # Create PKCS#1 encoder
-    pkcs1 = PKCS1(total_bytes=k)
-
-    # Encode the message with PKCS#1 v1.5
-    padded_message = pkcs1.encode(message)
-    print(f"Padded Message (hex): {padded_message.hex()}")
-
-    # Encrypt the padded message using RSA public key
-    ciphertext = oracle.encrypt(padded_message)
-    print(f"Ciphertext (hex): {ciphertext.hex()}")
-
-    # Use oracle to check if ciphertext is PKCS#1 compliant after decryption
-    is_valid = oracle.oracle(ciphertext)
-    print(f"Oracle PKCS#1 Compliance Check: {is_valid}")
-
-    # Decrypt ciphertext using private key
-    decrypted_padded = oracle.decrypt(ciphertext)
-    print(f"Decrypted Padded Message (hex): {decrypted_padded.hex()}")
-
-    # Decode the message from PKCS#1 format
-    original_message = pkcs1.decode(decrypted_padded)
-    print(f"Decoded Message: {original_message.decode()}")
-
+    main()
