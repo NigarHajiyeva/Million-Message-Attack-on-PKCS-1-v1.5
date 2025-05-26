@@ -1,31 +1,31 @@
-# 🔓 Million Message Attack on PKCS#1 v1.5
+# Million Message Attack on PKCS#1 v1.5
 
 This project demonstrates a real-world cryptographic vulnerability: **Million Message Attack** against the RSA encryption scheme using the **PKCS#1 v1.5** padding format. It was developed as an academic project and serves as a detailed educational resource on how cryptographic protocols can fail in practice due to seemingly minor leaks.
 
 ---
 
-## 📌 Table of Contents
+## Table of Contents
 
-- [📖 Overview](#-overview)
-- [📜 PKCS#1 v1.5 Padding Scheme](#-pkcs1-v15-padding-scheme)
-- [🔐 RSA Implementation Details](#-rsa-implementation-details)
-- [🚨 Attack Description](#-attack-description)
+- [ Overview](#-overview)
+- [ PKCS#1 v1.5 Padding Scheme](#-pkcs1-v15-padding-scheme)
+- [ RSA Implementation Details](#-rsa-implementation-details)
+- [ Attack Description](#-attack-description)
   - [Step-by-Step Process](#step-by-step-process)
-- [🧠 Theory Behind the Attack](#-theory-behind-the-attack)
-- [📁 Project Structure](#-project-structure)
-- [💻 How to Run](#-how-to-run)
-- [📚 References](#-references)
+- [ Theory Behind the Attack](#-theory-behind-the-attack)
+- [ Project Structure](#-project-structure)
+- [ How to Run](#-how-to-run)
+- [ References](#-references)
 
 
 ---
 
-## 📖 Overview
+##  Overview
 
 Million Message Attack also known as Bleichenbacher's attack, discovered in 1998, allows an attacker to decrypt RSA ciphertexts without access to the private key. It takes advantage of how certain implementations of the PKCS#1 v1.5 padding scheme respond to improperly padded messages. These responses reveal whether the decrypted message starts with specific padding bytes (`0x00 0x02`), which can be used as an **oracle** in an adaptive attack.
 
 ---
 
-## 📜 PKCS#1 v1.5 Padding Scheme
+##  PKCS#1 v1.5 Padding Scheme
 
 The encoding scheme used prior to encryption is:
 EM = 0x00 | 0x02 | PS | 0x00 | M
@@ -42,7 +42,7 @@ The total length of the encoded message **must match** the RSA modulus size in b
 
 ---
 
-## 🔐 RSA Implementation Details
+##  RSA Implementation Details
 
 RSA key generation and encryption/decryption are implemented from scratch.
 
@@ -61,7 +61,7 @@ Libraries used:
 
 ---
 
-## 🚨 Attack Description
+##  Attack Description
 
 The attack simulates a **padding oracle** that reveals whether a decrypted ciphertext is PKCS#1 conformant. Using this oracle, the attack proceeds in **three main phases** (not counting optional blinding):
 
@@ -86,7 +86,7 @@ The attack simulates a **padding oracle** that reveals whether a decrypted ciphe
 
 ---
 
-## 🧠 Theory Behind the Attack
+##  Theory Behind the Attack
 
 The attack exploits the RSA malleability property: for a ciphertext `c = m^e mod n`, any `c' = (c * s^e) mod n` decrypts to `m' = (m * s) mod n`.
 
@@ -98,7 +98,7 @@ Bleichenbacher showed that, on average, only about **2^20 queries** are needed t
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```bash
 .
@@ -108,25 +108,25 @@ Bleichenbacher showed that, on average, only about **2^20 queries** are needed t
 └── requirements.txt # Installation requirements
 ```
 ---
-## 💻 How to Run
+##  How to Run
 
 ### 🔧 1. Clone the Repository
 ```bash
 git clone https://github.com/NigarHajiyeva/Million-Message-Attack-on-PKCS-1-v1.5.git
 cd Million-Message-Attack-on-PKCS-1-v1.5
 ```
-### 📦 2. Install Dependencies
+###  2. Install Dependencies
 Make sure Python 3 is installed, then run:
 ```bash
 pip install -r requirements.txt
 ```
-### ▶️ 3. Run a Single Test
+###  3. Run a Single Test
 To run the attack, execute:
 ```bash
 python3 main.py
 ```
 ---
-## 📚 References
+##  References
 
 1. **Daniel Bleichenbacher**, *Chosen ciphertext attacks against protocols based on the RSA encryption standard PKCS #1*, Advances in Cryptology — CRYPTO ’98, Lecture Notes in Computer Science, vol 1462, pp. 1–12, Springer, 1998.  
    🔗 [https://doi.org/10.1007/BFb0055716](https://doi.org/10.1007/BFb0055716)
