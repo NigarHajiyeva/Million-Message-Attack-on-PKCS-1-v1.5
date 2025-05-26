@@ -14,8 +14,6 @@ This project demonstrates a real-world cryptographic vulnerability: **Million Me
 - [🧠 Theory Behind the Attack](#-theory-behind-the-attack)
 - [📁 Project Structure](#-project-structure)
 - [💻 How to Run](#-how-to-run)
-- [📊 Simulation Results](#-simulation-results)
-- [⚠️ Security Implications](#️-security-implications)
 - [📚 References](#-references)
 
 
@@ -128,3 +126,13 @@ To run the attack, execute:
 python3 main.py
 ```
 ---
+## 📚 References
+
+1. **Daniel Bleichenbacher**, *Chosen ciphertext attacks against protocols based on the RSA encryption standard PKCS #1*, Advances in Cryptology — CRYPTO ’98, Lecture Notes in Computer Science, vol 1462, pp. 1–12, Springer, 1998.  
+   🔗 [https://doi.org/10.1007/BFb0055716](https://doi.org/10.1007/BFb0055716)
+
+2. **RFC 2313**, *PKCS #1: RSA Encryption Version 1.5* (Historic RFC).  
+   🔗 [https://datatracker.ietf.org/doc/html/rfc2313](https://datatracker.ietf.org/doc/html/rfc2313)
+3. **RSA Data Security, Inc.**, *PKCS #1: RSA Encryption Standard*, Version 1.5, Redwood City, CA, November 1993. 
+
+
