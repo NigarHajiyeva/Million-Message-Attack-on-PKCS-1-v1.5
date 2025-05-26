@@ -2,20 +2,6 @@
 
 This project demonstrates a real-world cryptographic vulnerability: **Million Message Attack** against the RSA encryption scheme using the **PKCS#1 v1.5** padding format. It was developed as an academic project and serves as a detailed educational resource on how cryptographic protocols can fail in practice due to seemingly minor leaks.
 
----
-
-## Table of Contents
-
-- [ Overview](#-overview)
-- [ PKCS#1 v1.5 Padding Scheme](#-pkcs1-v15-padding-scheme)
-- [ RSA Implementation Details](#-rsa-implementation-details)
-- [ Attack Description](#-attack-description)
-  - [Step-by-Step Process](#step-by-step-process)
-- [ Theory Behind the Attack](#-theory-behind-the-attack)
-- [ Project Structure](#-project-structure)
-- [ How to Run](#-how-to-run)
-- [ References](#-references)
-
 
 ---
 
